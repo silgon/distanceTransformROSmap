@@ -10,41 +10,10 @@
 
 using namespace cv;
 
-int maskSize0 = CV_DIST_MASK_5;
-int voronoiType = -1;
 int edgeThresh = 240;
-int distType0 = CV_DIST_L1;
 
 // The output and temporary images
 Mat gray;
-
-std::vector<float> unique(const cv::Mat& input, bool sort = false)
-{
-    if (input.channels() > 1 || input.type() != CV_32F) 
-    {
-        std::cout<< "unique !!! Only works with CV_32F 1-channel Mat" << std::endl;
-        return std::vector<float>();
-    }
-
-    std::vector<float> out;
-    for (int y = 0; y < input.rows; ++y)
-    {
-        const float* row_ptr = input.ptr<float>(y);
-        for (int x = 0; x < input.cols; ++x)
-        {
-            float value = row_ptr[x];
-
-            if ( std::find(out.begin(), out.end(), value) == out.end() )
-                out.push_back(value);
-        }
-    }
-
-    if (sort)
-        std::sort(out.begin(), out.end());
-
-    return out;
-}
-
 
 
 const char* keys =
@@ -63,17 +32,12 @@ int main( int argc, const char** argv )
         return -1;
     }
 
-
-
-    int maskSize = voronoiType >= 0 ? CV_DIST_MASK_5 : maskSize0;
-    int distType = voronoiType >= 0 ? CV_DIST_L2 : distType0;
-
     Mat edge = gray >= edgeThresh, dist, labels, dist8u;
     // Mat edge = gray >= edgeThresh;
 
 
-    distanceTransform( edge, dist, labels, distType, maskSize);
-    // std::cout << dist << "\n";
+    distanceTransform( edge, dist, labels, CV_DIST_L1, CV_DIST_MASK_3);
+
     // begin "painting" the distance transform result
     dist *= 5000;
     pow(dist, 0.5, dist);
@@ -89,10 +53,10 @@ int main( int argc, const char** argv )
     dist32s += Scalar::all(255);
     dist32s.convertTo(dist8u2, CV_8U);
 
-    Mat planes[] = {dist8u1, dist8u2, dist8u2};
+    Mat planes[] = {dist8u1, dist8u1, dist8u1};
     merge(planes, 3, dist8u);
 
-    imshow("Distance Map", dist8u );
+    imshow("Distance Map", dist8u1 );
     waitKey(0);
 
     return 0;
