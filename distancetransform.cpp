@@ -32,31 +32,25 @@ int main( int argc, const char** argv )
         return -1;
     }
 
-    Mat edge = gray >= edgeThresh, dist, labels, dist8u;
-    // Mat edge = gray >= edgeThresh;
-
+    // Mat edge = gray >= edgeThresh, dist, labels, dist8u;
+    Mat edge = gray >= edgeThresh, dist, labels;
 
     distanceTransform( edge, dist, labels, CV_DIST_L1, CV_DIST_MASK_3);
 
-    // begin "painting" the distance transform result
-    dist *= 5000;
-    pow(dist, 0.5, dist);
+    Mat result_8u, result_vor;
 
-    Mat dist32s, dist8u1, dist8u2;
+    dist.convertTo(result_8u, CV_8U, 1, 0);
+    labels.convertTo(result_vor, CV_8U, 1, 0);
 
-    dist.convertTo(dist32s, CV_32S, 1, 0.5);
-    dist32s &= Scalar::all(255);
 
-    dist32s.convertTo(dist8u1, CV_8U, 1, 0);
-    dist32s *= -1;
-
-    dist32s += Scalar::all(255);
-    dist32s.convertTo(dist8u2, CV_8U);
-
-    Mat planes[] = {dist8u1, dist8u1, dist8u1};
-    merge(planes, 3, dist8u);
-
-    imshow("Distance Map", dist8u1 );
+    imshow("Edges Map", edge );
+    imshow("Distance Map", result_8u );
+    // imshow("voronoi Map", labels*100 );
+    // vector<Mat> channel;
+    // split(labels, channel);
+    // imshow("x", channel[0] );
+    // imshow("y", channel[1] );
+    // imshow("z", channel[2] );
     waitKey(0);
 
     return 0;
