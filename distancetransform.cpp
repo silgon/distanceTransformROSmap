@@ -35,16 +35,20 @@ int main( int argc, const char** argv )
     // Mat edge = gray >= edgeThresh, dist, labels, dist8u;
     Mat edge = gray >= edgeThresh, dist, labels;
 
-    distanceTransform( edge, dist, labels, CV_DIST_L1, CV_DIST_MASK_3);
+    // distanceTransform( edge, dist, labels, CV_DIST_L1, CV_DIST_MASK_3);
+    distanceTransform( edge, dist, labels, CV_DIST_L1, CV_DIST_MASK_3, DIST_LABEL_PIXEL);
+    normalize(dist, dist, 0, 1., NORM_MINMAX);
 
-    Mat result_8u, result_vor;
 
-    dist.convertTo(result_8u, CV_8U, 1, 0);
-    labels.convertTo(result_vor, CV_8U, 1, 0);
+    std::cout << dist.at<int>(0,0) << "\n";
+    std::cout << labels.at<int>(0,0) << "\n";
+    std::cout << dist.at<int>(0,1) << "\n";
+    std::cout << labels.at<int>(0,1) << "\n";
 
 
     imshow("Edges Map", edge );
-    imshow("Distance Map", result_8u );
+    imshow("Distance Map", dist );
+    // imshow("Labels Map", label8u );
     // imshow("voronoi Map", labels*100 );
     // vector<Mat> channel;
     // split(labels, channel);
