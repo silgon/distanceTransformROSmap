@@ -32,21 +32,17 @@ int main( int argc, const char** argv )
         return -1;
     }
 
-    // Mat edge = gray >= edgeThresh, dist, labels, dist8u;
-    Mat edge = gray >= edgeThresh, dist, labels;
+    Mat edge = gray >= edgeThresh, dist, labels, dist_0_1;
 
-    // distanceTransform( edge, dist, labels, CV_DIST_L1, CV_DIST_MASK_3);
     distanceTransform( edge, dist, labels, CV_DIST_L1, CV_DIST_MASK_3, DIST_LABEL_PIXEL);
     // distanceTransform( edge, dist, labels, CV_DIST_L1, CV_DIST_MASK_3, DIST_LABEL_CCOMP);
-    normalize(dist, dist, 0, 1., NORM_MINMAX);
 
+    // get max and min values of distance
+    double min, max;
+    cv::minMaxLoc(dist, &min, &max);
+    std::cout << "min: "<<min <<"\tmax:" <<max << "\n";
+    
 
-    // std::cout << dist.at<int>(0,0) << "\n";
-    // std::cout << labels.at<int>(0,0) << "\n";
-    // std::cout << dist.at<int>(0,1) << "\n";
-    // std::cout << labels.at<int>(0,1) << "\n";
-    // std::cout << dist.rows << "," << dist.cols << "\n";
-    // std::cout << labels.rows << "," << labels.cols << "\n";
     std::cout << labels.size() << "\n";
     int idx, idy, jdx, jdy;
     int tmp;
@@ -59,43 +55,25 @@ int main( int argc, const char** argv )
             if(edge.at<uchar>(row,col)==0)
                 label_to_index.push_back(cv::Vec2i(row,col));
 
-    // for (int row = 0; row < edge.rows; ++row)
-    //     std::cout << edge.at<int>(row,0) << "\n";
+    // check 20 values as sanity check that the detection of
+    // the closest point is working
+    srand (time(NULL));
+    for (int i = 0; i < 20; i++) {
+        idx = rand()%dist.cols;
+        idy = rand()%dist.rows;
+        tmp = labels.at<int>(idy, idx);
 
-    // for (int i = 100000; i < 100100; i++) {
-    for (int i = 99980; i < 100050; i++) {
-        edge.data[i]=0; // mark what are we looking for
-
-        idx = floor(i/dist.cols);
-        idy = i%dist.cols;
-        // edge.at<uchar>(idx,idy)=0; // mark what are we looking for
-
-        tmp = labels.at<int>(idx,idy);
-        // std::cout << "("<<idx<<","<<idy <<")" <<"-"<<labels.at<int>(idx,idy)<< "\n";
         std::cout << "("<<idx<<","<<idy <<":"<<
-            (int)edge.at<uchar>(idx,idy)<<"|"<<dist.at<float>(idx,idy)<<")" <<"-"<<
-            tmp<<"-"<< label_to_index[tmp]<< "\n";
-
-        // jdx = floor(tmp/labels.cols);
-        // jdy = tmp%labels.cols;
-        // std::cout << "("<<idx<<","<<idy <<")" <<"-("<<jdx<<","<<jdy <<")"<< "\n";
-        // edge.data[tmp]=1;
+            (int)edge.at<uchar>(idy, idx)<<"|"<<dist.at<float>(idy, idx)<<")"
+             <<"-"<< tmp <<"-"<< label_to_index[tmp]<< "\n";
     }
-    std::cout << "("<<0<<","<<0 <<")" <<"-"<<labels.at<int>(0,0)<<"-"<<label_to_index[labels.at<int>(0, 0)]<< "\n";
-    std::cout << "("<<0<<","<<1 <<")" <<"-"<<labels.at<int>(0,1)<<"-"<<label_to_index[labels.at<int>(0, 1)]<< "\n";
-    std::cout << "("<<1<<","<<0 <<")" <<"-"<<labels.at<int>(1,0)<<"-"<<label_to_index[labels.at<int>(1, 0)]<< "\n";
 
-
+    // plot edges map
     imshow("Edges Map", edge );
-    imshow("Distance Map", dist );
-    // imshow("Who knows", labels );
-    // imshow("Labels Map", label8u );
-    // imshow("voronoi Map", labels*100 );
-    // vector<Mat> channel;
-    // split(labels, channel);
-    // imshow("x", channel[0] );
-    // imshow("y", channel[1] );
-    // imshow("z", channel[2] );
+    // plot normalized distance
+    normalize(dist, dist_0_1, 0, 1., NORM_MINMAX);
+    imshow("Distance Map", dist_0_1 );
+    // wait
     waitKey(0);
 
     return 0;
