@@ -16,11 +16,21 @@ int edgeThresh = 240;
 // The output and temporary images
 Mat gray;
 
+double originx,originy,offset=0,resolution; 
 
 const char* keys =
 {
     "{1| |stuff.jpg|input image file}"
 };
+
+void mapToWorld(double mx, double my, double& wx, double& wy) {
+    wx = originx + mx * resolution;
+    wy = originy + my * resolution;
+}
+void worldToMap(double wx, double wy, double& mx, double& my) {
+    mx = (wx - originx) / resolution;
+    my = (wy - originy) / resolution;
+}
 
 int main( int argc, const char** argv )
 {
@@ -29,9 +39,10 @@ int main( int argc, const char** argv )
     string filename = parser.get<string>("1");
     YAML::Node config = YAML::LoadFile(filename);
     string mapfile = config["image"].as<std::string>();
-    double resolution = config["resolution"].as<double>();
     std::vector<double> origin = config["origin"].as<std::vector<double>>();
-
+    resolution = config["resolution"].as<double>();
+    originx = origin[0];
+    originy = origin[1];
     gray = imread(mapfile.c_str(), 0);
     if(gray.empty())
     {
@@ -69,8 +80,9 @@ int main( int argc, const char** argv )
         idx = rand()%dist.cols;
         idy = rand()%dist.rows;
         tmp = labels.at<int>(idy, idx);
-
-        std::cout << "("<<idx<<","<<idy <<":"<<
+        double wx, wy;
+        mapToWorld(idx, idy, wx, wy);
+        std::cout << "("<<idx<<","<<idy <<":"<<wx<<","<<wy<<":"<<
             (int)edge.at<uchar>(idy, idx)<<"|"<<dist.at<float>(idy, idx)<<")"
              <<"-"<< tmp <<"-"<< label_to_index[tmp]<< "\n";
     }
