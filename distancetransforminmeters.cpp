@@ -75,16 +75,28 @@ int main( int argc, const char** argv )
 
     // check 20 values as sanity check that the detection of
     // the closest point is working
-    srand (time(NULL));
+    // srand (time(NULL));
+    srand (0);
     for (int i = 0; i < 20; i++) {
         idx = rand()%dist.cols;
         idy = rand()%dist.rows;
+        // get closest obstacle (its label)
         tmp = labels.at<int>(idy, idx);
-        double wx, wy;
+        double wx, wy, zx,zy;
+        // transform map coordinates to world coordinates
         mapToWorld(idx, idy, wx, wy);
-        std::cout << "("<<idx<<","<<idy <<":"<<wx<<","<<wy<<":"<<
-            (int)edge.at<uchar>(idy, idx)<<"|"<<dist.at<float>(idy, idx)<<")"
-             <<"-"<< tmp <<"-"<< label_to_index[tmp]<< "\n";
+        mapToWorld(label_to_index[tmp][1], label_to_index[tmp][0], zx, zy);
+        // compute angle
+        double angle = atan2(label_to_index[tmp][0]-idy,
+                             label_to_index[tmp][1]-idx);
+        // print information
+        std::cout << "-----------------------------" << "\n";
+        std::cout << idx<<","<<idy <<"\t"<<label_to_index[tmp] <<"\t label:"
+                  << tmp <<std::endl
+                  << wx <<","<<wy << "\t"<< zx << "," << zy << std::endl
+                  << "distance: "<<dist.at<float>(idy, idx)<<" px or "
+                  << dist.at<float>(idy, idx)*resolution<<std::endl
+                  << "angle: " << angle << std::endl;
     }
 
     // plot edges map
